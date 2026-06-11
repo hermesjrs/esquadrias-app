@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+public/sample
+public/test-*
+scripts
+*.log
+.DS_Store
