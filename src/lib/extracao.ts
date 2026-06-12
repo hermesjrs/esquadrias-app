@@ -112,6 +112,30 @@ const BLACKLIST_CODIGO_NORMALIZADO =
   /^(AP\d{3,}|APT[O0]?\d+|R[0-9]{2,}|N\d+|NIV\d+|PAV\d+)$/i;
 
 /**
+ * Famílias que NÃO levam dimensão (guarda-corpos, serralheria, venezianas):
+ * VO/VL não fazem sentido pra elas no quantitativo, e a anotação de dimensão
+ * mais próxima costuma pertencer a outra esquadria — associar só geraria dado
+ * errado. A tag continua sendo detectada normalmente (inclusive a validação
+ * de candidato por proximidade de dimensão); ela só não RECEBE osso/luz.
+ *
+ * Comparação por família exata: GCPI (guarda-corpo piscina) segue COM
+ * dimensões — não confundir com o prefixo GC.
+ */
+const FAMILIAS_SEM_DIMENSAO = new Set([
+  "GC",
+  "SER",
+  "VENT",
+  "AT",
+  "GCF",
+  "GCA",
+]);
+
+/** Família "léxica" do código final: letras (e underscore) antes dos dígitos. */
+function familiaDoCodigo(code: string): string {
+  return code.match(/^[A-Z_]+/i)?.[0]?.toUpperCase() ?? "";
+}
+
+/**
  * Tenta normalizar uma string como candidato a código de família desconhecida.
  * Retorna `{ familia, code }` se passou no regex amplo + blacklist; null senão.
  * A validação por proximidade a dimensão é feita depois, em extrairTags.
@@ -494,9 +518,11 @@ export async function extrairTags(blob: Blob): Promise<ExtracaoResultado> {
     }
 
     for (const tag of tagsDaPagina) {
-      const dims = associarDimensoes(tag, dimsDaPagina);
-      tag.osso = dims.osso;
-      tag.luz = dims.luz;
+      if (!FAMILIAS_SEM_DIMENSAO.has(familiaDoCodigo(tag.code))) {
+        const dims = associarDimensoes(tag, dimsDaPagina);
+        tag.osso = dims.osso;
+        tag.luz = dims.luz;
+      }
       tag.local = ambienteProximo(tag, ambientes);
       tags.push(tag);
     }
