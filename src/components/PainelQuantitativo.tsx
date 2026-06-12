@@ -84,7 +84,7 @@ export function PainelQuantitativo({ pdfs, projeto }: Props) {
           </button>
         )}
         {mostrarAvisos && q.avisos.length > 0 && (
-          <ul className="mt-2 space-y-1.5">
+          <ul className="mt-2 max-h-64 space-y-1.5 overflow-y-auto">
             {q.avisos.map((a, i) => (
               <li
                 key={i}
