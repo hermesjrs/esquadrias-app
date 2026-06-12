@@ -72,11 +72,14 @@ export type ExtracaoResultado = {
 //   "EE03", "EE14" (família EE — alçapões/chapéus aletados, Nilo)
 //   "PF03 - PORTÃO METÁLICO BASC." (código + descrição separados por " - ")
 //   "PM INT-08", "PM - INT06" (PM_INT com separadores)
+//   "PM-01 E", "PM-03 D" (sentido de abertura Esquerda/Direita separado por
+//   espaço — GO Moinhos. O E/D é DESCARTADO do código: PM-01 E e PM-01 D
+//   contam juntos como PM01, diferente dos sufixos colados que são variantes)
 //
 // IMPORTANTE: a ordem das famílias na alternativa importa por causa de prefixos
 // compartilhados. PM_INT antes de PM, PVF/PVE antes de PV, PAI antes de PA.
 const CODIGO_REGEX =
-  /^(PM[\s_-]*INT|PCF|PVF|PVE|PJA|JVP|GCPI|PISC|ERU|ZEN|PAI|PM|JA|JB|JF|PA|PB|PF|PV|GC|AT|EE)[\s_.\-]*(\d+)(\.[A-Za-z]+|-[A-Za-z]+(?:-[A-Za-z]+)*|[A-Za-z](?:[A-Za-z\-_]*[A-Za-z])?)?(?:\s+-\s+.+)?$/;
+  /^(PM[\s_-]*INT|PCF|PVF|PVE|PJA|JVP|GCPI|PISC|ERU|ZEN|PAI|PM|JA|JB|JF|PA|PB|PF|PV|GC|AT|EE)[\s_.\-]*(\d+)(\.[A-Za-z]+|-[A-Za-z]+(?:-[A-Za-z]+)*|[A-Za-z](?:[A-Za-z\-_]*[A-Za-z])?)?(?:\s+[EDed])?(?:\s+-\s+.+)?$/;
 
 /**
  * CANDIDATO_REGEX (amplo): qualquer "letras + dígitos + opcional sufixo" sem
@@ -88,7 +91,7 @@ const CODIGO_REGEX =
  * raio próximo (ver validação em extrairTags).
  */
 const CANDIDATO_REGEX =
-  /^([A-Z]{1,5}(?:[._\s-]*INT)?)[\s_.\-]*(\d{1,4})(\.[A-Za-z]+|-[A-Za-z]+(?:-[A-Za-z]+)*|[A-Za-z](?:[A-Za-z\-_]*[A-Za-z])?)?(?:\s+-\s+.+)?$/;
+  /^([A-Z]{1,5}(?:[._\s-]*INT)?)[\s_.\-]*(\d{1,4})(\.[A-Za-z]+|-[A-Za-z]+(?:-[A-Za-z]+)*|[A-Za-z](?:[A-Za-z\-_]*[A-Za-z])?)?(?:\s+[EDed])?(?:\s+-\s+.+)?$/;
 
 /**
  * Strings que casam o CANDIDATO_REGEX mas claramente NÃO são códigos de esquadria.
