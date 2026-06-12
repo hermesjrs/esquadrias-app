@@ -41,15 +41,18 @@ export function ehPlantaIgnoravel(filename: string): boolean {
 }
 
 export function inferirTorreDoFilename(filename: string): Torre {
-  // Cidade Baixa: -001A-, -006B-
-  const m1 = filename.match(/[-_](\d{3})([AB])[-_]/i);
-  if (m1) return m1[2].toUpperCase() === "A" ? "A" : "B";
-  // Nilo Square: -TA-, -TB- (Torre Plus A/B)
+  // Torre explícita primeiro: -TA-/-TB- (Nilo) e -T1-/-T2- (Square Garden).
+  // Precisa vir ANTES do padrão numérico: "7890-EX-ARQ-0106A-PBX-T1-..."
+  // (SQG Family) tem "0106A" que casaria o padrão de bloco abaixo — a torre
+  // verdadeira é a T1.
   const m2 = filename.match(/[-_]T([AB])[-_]/i);
   if (m2) return m2[1].toUpperCase() === "A" ? "A" : "B";
-  // Square Garden e outros: -T1-, -T2-, -T3- (Torre numerada)
   const m3 = filename.match(/[-_]T(\d+)[-_]/i);
   if (m3) return m3[1];
+  // Nº da prancha + bloco: -001A- (Cidade Baixa, 3 dígitos), -0002B- (Yofi,
+  // 4 dígitos).
+  const m1 = filename.match(/[-_](\d{3,4})([AB])[-_]/i);
+  if (m1) return m1[2].toUpperCase() === "A" ? "A" : "B";
   return "DESCONHECIDA";
 }
 
@@ -185,5 +188,12 @@ export function inferirTorreDoTexto(textos: string[]): Torre {
   // Números: "TORRE 1", "TORRE 02" (Square Garden e outros)
   const mNum = joined.match(/\bTORRE\s+(\d+)\b/i);
   if (mNum) return String(parseInt(mNum[1], 10));
+  // Bloco como letra solta no FIM do título (Yofi: "PLANTA BAIXA 2º
+  // PAVIMENTO A"). Só em textos de título — letra solta em anotação
+  // qualquer não é torre.
+  for (const t of textos) {
+    const m = t.match(/PLANTA\s+BAIXA.*[\s-]([AB])\s*$/i);
+    if (m) return m[1].toUpperCase() === "A" ? "A" : "B";
+  }
   return "DESCONHECIDA";
 }
