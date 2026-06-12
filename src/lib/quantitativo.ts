@@ -149,45 +149,11 @@ export type Quantitativo = {
   avisos: Aviso[];
 };
 
-/**
- * Duas dimensões são compatíveis se:
- * - Ambas ausentes, OU
- * - Uma ausente (anotação incompleta, não conta como divergência), OU
- * - L×A iguais E (peitoril igual OU pelo menos um peitoril ausente).
- *
- * O peitoril ausente é tratado como wildcard porque o desenhista frequentemente
- * omite a anotação em algumas tags do mesmo código — não significa peitoril ≠.
- */
-function dimensaoCompativel(a?: Dimensoes, b?: Dimensoes): boolean {
-  if (!a || !b) return true;
-  if (a.largura !== b.largura || a.altura !== b.altura) return false;
-  if (a.peitoril != null && b.peitoril != null) {
-    return a.peitoril === b.peitoril;
-  }
-  return true;
-}
-
 type OcorrenciaDim = {
   pdfNome: string;
   osso?: Dimensoes;
   luz?: Dimensoes;
 };
-
-function ocorrenciasCompativeis(a: OcorrenciaDim, b: OcorrenciaDim): boolean {
-  return (
-    dimensaoCompativel(a.osso, b.osso) && dimensaoCompativel(a.luz, b.luz)
-  );
-}
-
-function fmtDim(d?: Dimensoes): string {
-  if (!d) return "—";
-  const p = d.peitoril != null ? `/${d.peitoril}` : "";
-  return `${d.largura}×${d.altura}${p}`;
-}
-
-function assinaturaOcorrencia(o: OcorrenciaDim): string {
-  return `VO ${fmtDim(o.osso)} | VL ${fmtDim(o.luz)}`;
-}
 
 /** Escolhe a dimensão "canônica" do bucket: prioriza ocorrência com peitoril definido. */
 function escolherCanonica(
@@ -323,14 +289,9 @@ export function calcularQuantitativo(pdfs: PdfFile[]): Quantitativo {
 
   const buckets = new Map<string, Bucket>();
   const pavimentosSet = new Set<Pavimento>();
-  // Label efetivo por código de pavimento — primeiro PDF que trouxe vence
-  const labelsPorPavimento = new Map<Pavimento, string>();
 
   for (const pdf of escolhidos) {
     pavimentosSet.add(pdf.pavimento);
-    if (pdf.pavimentoLabel && !labelsPorPavimento.has(pdf.pavimento)) {
-      labelsPorPavimento.set(pdf.pavimento, pdf.pavimentoLabel);
-    }
     const rep = repeticoesDe(pdf);
     const pdfNome = nomeDoPdf(pdf);
     for (const tag of pdf.tags ?? []) {
@@ -365,48 +326,6 @@ export function calcularQuantitativo(pdfs: PdfFile[]): Quantitativo {
         luz: tag.luz,
       });
     }
-  }
-
-  // Helper: label efetivo do pavimento (do selo, ou fallback genérico)
-  const labelDePavimento = (p: Pavimento): string =>
-    labelsPorPavimento.get(p) ?? PAVIMENTO_LABEL[p];
-
-  // Gera avisos de dim_variavel — só quando há de fato pares incompatíveis
-  // entre ocorrências (peitoril ausente em um dos lados não conta).
-  for (const b of buckets.values()) {
-    const ocs = b.ocorrencias;
-    let temDivergencia = false;
-    for (let i = 0; i < ocs.length && !temDivergencia; i++) {
-      for (let j = i + 1; j < ocs.length && !temDivergencia; j++) {
-        if (!ocorrenciasCompativeis(ocs[i], ocs[j])) {
-          temDivergencia = true;
-        }
-      }
-    }
-    if (!temDivergencia) continue;
-
-    // Agrupa ocorrências por assinatura visual e lista plantas de cada uma
-    const grupos = new Map<string, Set<string>>();
-    for (const o of ocs) {
-      const sig = assinaturaOcorrencia(o);
-      const set = grupos.get(sig) ?? new Set<string>();
-      set.add(o.pdfNome);
-      grupos.set(sig, set);
-    }
-    const detalhe = Array.from(grupos.entries())
-      .map(([sig, plantas]) => {
-        const lista = Array.from(plantas).sort().join(", ");
-        return `${sig} (em ${lista})`;
-      })
-      .join("; ");
-    const labelPav = b.pavimentoLabel ?? labelDePavimento(b.pavimento);
-    avisos.push({
-      tipo: "dim_variavel",
-      codigo: b.code,
-      pavimento: b.pavimento,
-      pavimentoLabel: labelPav,
-      descricao: `Dimensões diferentes para ${b.code} em ${labelPav}: ${detalhe}.`,
-    });
   }
 
   // Constrói linhas
