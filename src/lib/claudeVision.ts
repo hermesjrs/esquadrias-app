@@ -255,6 +255,8 @@ export async function extrairTagsViaClaude(
     tituloPrancha: parsed.titulo_prancha ?? null,
     repeticoesDetectadas: repeticoesDetectadas ?? null,
     rangeTipoDetectado: null,
+    repeticaoTipoDuvidosa: false,
+    repeticoesTrecho: null,
     semTextoExtraivel: false,
     totalTextItems: tags.length,
     duplicadasSuspeitas: [],

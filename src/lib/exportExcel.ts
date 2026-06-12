@@ -37,6 +37,7 @@ const ROTULO_AVISO: Record<string, string> = {
   rasterizada: "Planta sem texto",
   vazia: "Planta sem códigos",
   sem_repeticao: "Repetições não detectadas — ajustar manual",
+  repeticao_duvidosa: "Repetições do tipo — confirmar valor",
   tag_duplicada: "Tag possivelmente duplicada",
   codigo_faltando: "Código faltando em uma planta",
   familia_desconhecida: "Família não cadastrada (revisar)",
@@ -203,6 +204,7 @@ export async function gerarPlanilha(q: Quantitativo): Promise<Blob> {
       else if (a.tipo === "dim_variavel") cor = "FFFEF9C3"; // amarelo
       else if (a.tipo === "familia_desconhecida") cor = "FFFFEDD5"; // laranja claro
       else if (a.tipo === "sem_repeticao") cor = "FFFEF9C3"; // amarelo
+      else if (a.tipo === "repeticao_duvidosa") cor = "FFFEF9C3"; // amarelo
       row.fill = {
         type: "pattern",
         pattern: "solid",

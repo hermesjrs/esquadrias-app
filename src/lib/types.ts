@@ -140,7 +140,7 @@ export type PaginaInfo = {
   height: number;
 };
 
-export const VERSAO_EXTRACAO = 28;
+export const VERSAO_EXTRACAO = 29;
 
 export type Projeto = {
   id: string;
@@ -170,6 +170,10 @@ export type PdfFile = {
   repeticoesDetectadas?: number | null;
   /** Range detectado: "TIPO (6° AO 19°)" → { inicio: 6, fim: 19 }. */
   rangeTipoDetectado?: { inicio: number; fim: number } | null;
+  /** Formato ambíguo de repetições no selo (range por hífen) — revisar. */
+  repeticaoTipoDuvidosa?: boolean | null;
+  /** Trecho do selo de onde as repetições foram lidas (citado no aviso). */
+  repeticoesTrecho?: string | null;
   /** Override manual (substitui o detectado se setado). */
   repeticoesManual?: number | null;
   /** PDF rasterizado (sem camada de texto extraível). */

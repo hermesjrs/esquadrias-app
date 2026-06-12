@@ -5,10 +5,7 @@ import {
   inferirTorreDoTexto,
 } from "./inferencia";
 import { carregarPdf } from "./pdf";
-import {
-  inferirRangeDeMuitos,
-  inferirRepeticoesDeMuitas,
-} from "./repeticoes";
+import { analisarRepeticoesTipo } from "./repeticoes";
 import type { RangeTipo } from "./repeticoes";
 import type { Dimensoes, Pavimento, TagExtraida, Torre } from "./types";
 
@@ -30,6 +27,13 @@ export type ExtracaoResultado = {
   tituloPrancha: string | null;
   repeticoesDetectadas: number | null;
   rangeTipoDetectado: RangeTipo | null;
+  /**
+   * true quando as repetições foram lidas de um formato ambíguo do selo
+   * (ex: range por hífen "TIPO 1 - 3 PAVTOS") — gera aviso de revisão.
+   */
+  repeticaoTipoDuvidosa: boolean;
+  /** Trecho do selo de onde as repetições foram lidas (citado no aviso). */
+  repeticoesTrecho: string | null;
   /** true se o PDF não tem camada de texto (provavelmente rasterizado). */
   semTextoExtraivel: boolean;
   /** Total de items de texto encontrados (pra heuristics). */
@@ -530,11 +534,9 @@ export async function extrairTags(blob: Blob): Promise<ExtracaoResultado> {
 
   await doc.destroy();
 
-  const rangeTipoDetectado = inferirRangeDeMuitos([...titulos, ...rangeHints]);
-  const repeticoesDetectadas =
-    rangeTipoDetectado != null
-      ? rangeTipoDetectado.fim - rangeTipoDetectado.inicio + 1
-      : inferirRepeticoesDeMuitas([...titulos, ...rangeHints]);
+  const analiseReps = analisarRepeticoesTipo([...titulos, ...rangeHints]);
+  const rangeTipoDetectado = analiseReps?.range ?? null;
+  const repeticoesDetectadas = analiseReps?.reps ?? null;
 
   const semTextoExtraivel = totalTextItems < 30;
 
@@ -555,6 +557,8 @@ export async function extrairTags(blob: Blob): Promise<ExtracaoResultado> {
       titulos.find((t) => /PLANTA\s+BAIXA/i.test(t)) ?? titulos[0] ?? null,
     repeticoesDetectadas,
     rangeTipoDetectado,
+    repeticaoTipoDuvidosa: analiseReps?.duvidoso ?? false,
+    repeticoesTrecho: analiseReps?.trecho ?? null,
     semTextoExtraivel,
     totalTextItems,
     duplicadasSuspeitas,

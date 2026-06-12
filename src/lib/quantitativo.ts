@@ -120,6 +120,7 @@ export type AvisoTipo =
   | "rasterizada"
   | "vazia"
   | "sem_repeticao"
+  | "repeticao_duvidosa"
   | "tag_duplicada"
   | "codigo_faltando"
   | "familia_desconhecida";
@@ -237,6 +238,25 @@ export function calcularQuantitativo(pdfs: PdfFile[]): Quantitativo {
         pdfId: pdf.id,
         pdfNome: nomeDoPdf(pdf),
         descricao: `Repetições do ${labelPdf(pdf)} não detectadas automaticamente no selo. Está contando como 1 pavimento — ajuste manualmente no card da planta se cobrir mais (ex: TP1 = ímpares 5º-19º = 8 pavimentos).`,
+      });
+    }
+
+    // Repetições detectadas, mas de um formato ambíguo do selo (ex: range
+    // por hífen "TIPO 1 - 3 PAVTOS"). Ajuste manual silencia o aviso.
+    if (
+      pdf.repeticaoTipoDuvidosa &&
+      pdf.repeticoesManual == null &&
+      (pdf.tags?.length ?? 0) > 0
+    ) {
+      avisos.push({
+        tipo: "repeticao_duvidosa",
+        pavimento: pdf.pavimento,
+        pavimentoLabel: labelPdf(pdf),
+        pdfId: pdf.id,
+        pdfNome: nomeDoPdf(pdf),
+        descricao: `Formato de repetições ambíguo no selo${
+          pdf.repeticoesTrecho ? ` ("${pdf.repeticoesTrecho}")` : ""
+        } — contando × ${repeticoesDe(pdf)}. Confirme ou ajuste no card da planta.`,
       });
     }
   }

@@ -18,6 +18,7 @@ const ROTULO_AVISO: Record<string, string> = {
   rasterizada: "Planta sem texto",
   vazia: "Planta sem códigos",
   sem_repeticao: "Repetições não detectadas — ajustar manual",
+  repeticao_duvidosa: "Repetições do tipo — confirmar valor",
   tag_duplicada: "Tag possivelmente duplicada",
   codigo_faltando: "Código faltando em uma planta",
   familia_desconhecida: "Família não cadastrada (revisar)",

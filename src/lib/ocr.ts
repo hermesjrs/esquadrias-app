@@ -356,6 +356,8 @@ export async function extrairTagsViaOcr(
       titulos.find((t) => /PLANTA\s+BAIXA/i.test(t)) ?? titulos[0] ?? null,
     repeticoesDetectadas,
     rangeTipoDetectado: null,
+    repeticaoTipoDuvidosa: false,
+    repeticoesTrecho: null,
     // OCR pegou texto - reportar como "tem texto" pra entrar no quantitativo
     semTextoExtraivel: false,
     totalTextItems,
