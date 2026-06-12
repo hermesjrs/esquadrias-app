@@ -1,0 +1,11 @@
+{
+  "headers": [
+    {
+      "source": "/demo/reset.html",
+      "headers": [
+        { "key": "Clear-Site-Data", "value": "\"storage\"" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}

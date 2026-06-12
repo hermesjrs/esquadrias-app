@@ -8,6 +8,7 @@ import { PdfDropzone } from "@/components/PdfDropzone";
 import { PdfViewer } from "@/components/PdfViewer";
 import { useApiKey } from "@/lib/useApiKey";
 import { usePdfs } from "@/lib/usePdfs";
+import { ehModoDemo, rodarSeedDemo } from "@/lib/demoSeed";
 import clsx from "clsx";
 
 type Aba = "planta" | "quantitativo";
@@ -20,6 +21,7 @@ export default function Home() {
     ocrEmAndamento,
     adicionarComoNovoProjeto,
     adicionarAoProjeto,
+    criarProjeto,
     renomearProjeto,
     alternarArquivadoProjeto,
     excluirProjeto,
@@ -40,6 +42,16 @@ export default function Home() {
     null,
   );
   const [aba, setAba] = useState<Aba>("planta");
+  const [seedMsg, setSeedMsg] = useState<string | null>(null);
+
+  // Modo demo (?demo na URL ou domínio de demonstração): com o IDB vazio,
+  // popula os projetos de exemplo embutidos no deploy. Roda no máximo uma
+  // vez — visitas seguintes já encontram os projetos persistidos.
+  useEffect(() => {
+    if (carregando || projetos.length > 0 || pdfs.length > 0) return;
+    if (!ehModoDemo()) return;
+    rodarSeedDemo({ criarProjeto, adicionarAoProjeto, onProgresso: setSeedMsg });
+  }, [carregando, projetos.length, pdfs.length, criarProjeto, adicionarAoProjeto]);
 
   const selecionado = useMemo(
     () => pdfs.find((p) => p.id === selecionadoId) ?? null,
@@ -98,6 +110,11 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden">
         <aside className="flex w-96 shrink-0 flex-col gap-4 overflow-y-auto border-r border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
           <PdfDropzone onArquivos={adicionarComoNovoProjeto} />
+          {seedMsg && (
+            <p className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              {seedMsg}
+            </p>
+          )}
           <div>
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Projetos

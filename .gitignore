@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# plantas de demo (vao so no deploy manual via vercel CLI, nunca pro repo publico)
+/public/demo
