@@ -158,7 +158,10 @@ export function ItemPdf({
               className="w-full rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-sm dark:border-zinc-600 dark:bg-zinc-900"
             />
           ) : (
-            <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <p
+              title={nomeExibido}
+              className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100"
+            >
               {nomeExibido}
             </p>
           )}
