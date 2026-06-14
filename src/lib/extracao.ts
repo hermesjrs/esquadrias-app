@@ -106,10 +106,12 @@ const CANDIDATO_REGEX =
  * VP = paginação/vista (não é esquadria — confirmado Nilo Square),
  * FINAL = numeração de detalhamento (GO Home Design),
  * BOX = caixa/box técnico, não esquadria (GO Cidade Baixa),
- * CL = não é esquadria (confirmado).
+ * CL = não é esquadria (confirmado),
+ * PAD = referência a projeto/caderno de detalhes padrão ("CONFORME PAD-328",
+ *   "PAD-101" — mureta de banheiro etc.), não é esquadria (Square Garden).
  */
 const BLACKLIST_FAMILIA =
-  /^(TA|TB|AC|EIXO|EX|AP|APT|APTO|CM|CMB|CL|H|B|R|VO|VL|VOL|VP|N|S|E|W|EXAUST|EXAUSTOR|FIG|TAB|TABELA|PRJ|REF|REV|DET|NIV|NIVEL|COTA|FINAL|BOX)$/i;
+  /^(TA|TB|AC|EIXO|EX|AP|APT|APTO|CM|CMB|CL|H|B|R|VO|VL|VOL|VP|N|S|E|W|EXAUST|EXAUSTOR|FIG|TAB|TABELA|PRJ|REF|REV|DET|NIV|NIVEL|COTA|FINAL|BOX|PAD)$/i;
 
 /**
  * Códigos banidos completos (forma normalizada). Pra padrões específicos que
