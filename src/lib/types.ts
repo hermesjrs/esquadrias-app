@@ -140,7 +140,7 @@ export type PaginaInfo = {
   height: number;
 };
 
-export const VERSAO_EXTRACAO = 32;
+export const VERSAO_EXTRACAO = 33;
 
 export type Projeto = {
   id: string;

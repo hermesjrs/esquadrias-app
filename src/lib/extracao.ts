@@ -545,8 +545,11 @@ export async function extrairTags(blob: Blob): Promise<ExtracaoResultado> {
 
   const semTextoExtraivel = totalTextItems < 30;
 
+  // Remove sobreposições exatas (rótulo desenhado 2x pelo CAD) antes de contar.
+  const tagsFinais = deduplicarSobreposicao(tags);
+
   // Detecta tags duplicadas próximas (mesmo código com posições muito próximas)
-  const duplicadasSuspeitas = detectarDuplicadasProximas(tags);
+  const duplicadasSuspeitas = detectarDuplicadasProximas(tagsFinais);
 
   // Inferência de pavimento/torre pelo texto extraído.
   const fontesInferencia = [...titulos, ...rangeHints, ...textosInferencia];
@@ -554,7 +557,7 @@ export async function extrairTags(blob: Blob): Promise<ExtracaoResultado> {
   const torreInferidoDoTexto = inferirTorreDoTexto(fontesInferencia);
 
   return {
-    tags,
+    tags: tagsFinais,
     paginas,
     // Prefere o título oficial da prancha (contém "PLANTA BAIXA"); cai pro
     // primeiro título qualquer só se não houver um oficial.
@@ -572,6 +575,36 @@ export async function extrairTags(blob: Blob): Promise<ExtracaoResultado> {
     pavimentoLabelInferidoDoTexto: pavInferido.label,
     torreInferidoDoTexto,
   };
+}
+
+/**
+ * Remove tags do MESMO código desenhadas na MESMA posição (sobreposição
+ * exata). O CAD frequentemente desenha o rótulo 2x pra dar traço mais forte —
+ * visualmente é uma tag só, e duas esquadrias reais nunca ocupam o mesmo ponto.
+ * Mantém a primeira ocorrência e descarta as cópias, preservando a dimensão
+ * caso só a cópia tenha recebido. O threshold (3px) é MUITO menor que o do
+ * aviso `tag_duplicada` (40px), que segue valendo pra tags próximas porém
+ * distintas (possíveis 2 esquadrias ou erro do desenhista — aí só avisa).
+ */
+const EPSILON_SOBREPOSICAO = 3;
+function deduplicarSobreposicao(tags: TagExtraida[]): TagExtraida[] {
+  const mantidas: TagExtraida[] = [];
+  for (const t of tags) {
+    const dup = mantidas.find(
+      (m) =>
+        m.code === t.code &&
+        m.pageIndex === t.pageIndex &&
+        Math.abs(m.x - t.x) < EPSILON_SOBREPOSICAO &&
+        Math.abs(m.y - t.y) < EPSILON_SOBREPOSICAO,
+    );
+    if (dup) {
+      if (!dup.osso && t.osso) dup.osso = t.osso;
+      if (!dup.luz && t.luz) dup.luz = t.luz;
+      continue;
+    }
+    mantidas.push(t);
+  }
+  return mantidas;
 }
 
 function detectarDuplicadasProximas(tags: TagExtraida[]): DuplicadaSuspeita[] {
